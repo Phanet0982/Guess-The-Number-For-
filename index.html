@@ -1,0 +1,188 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Guess The Number!</title>
+    <style>
+        body{
+            font-family: Arial, Helvetica, sans-serif;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            min-height: 100vh;
+            margin: 0;
+            background-color: #f4f4f4;
+        }
+
+        .container{
+            background: #ffffff;
+            padding: 30px 40px;
+            border-radius: 10px;
+            box-shadow: 0 4px 15px rgba(0, 0, 0, 0.1);
+            text-align: center;
+            width: 90%;
+            max-width: 400px;
+        }
+
+        h1{
+            color: #666;
+            margin-bottom: 20px;
+        }
+
+        #guessInput{
+            padding: 10px;
+            margin-bottom: 15px;
+            border: 2px solid #ccc;
+            border-radius: 5px;
+            width: calc(100% - 24px);
+            font-size: 16px;
+            text-align: center;
+        }
+
+        button {
+            background-color: #007bff;
+            color: white;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 5px;
+            cursor: pointer;
+            font-size: 16px;
+            margin-top: 5px;
+            transition: background-color 0.3s ease;
+        }
+
+        button:hover {
+            background-color: #0056b3;
+        }
+
+        #message{
+            margin-top: 20px;
+            font-weight: bold;
+            min-height: 20px;
+            color: #d9534f;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>Guess The Number! ☢</h1>
+        <p>I'm thinking of a number between 1 and 100.</p>
+        <input type="number" id="guessInput" placeholder="Enter your guess"  min="1" max="100"/>
+        <button id="checkButton">Check Guess</button>
+        <p id="message"></p>
+        <button id="resetButton" style="display: none;">Play Again</button>
+    </div>
+
+    <script>
+// --- Game Variables ---
+let secretNumber;
+let attempts = 0;
+const maxAttempts = 10;
+const minRange = 1;
+const maxRange = 100;
+
+// --- DOM Elements ---
+const guessInput = document.getElementById('guessInput');
+const checkButton = document.getElementById('checkButton');
+const messageElement = document.getElementById('message');
+const resetButton = document.getElementById('resetButton');
+
+// --- Functions ---
+
+/**
+ * Initializes the game: generates a new secret number and resets attempts.
+ */
+function initializeGame() {
+    // Generate a random integer between minRange and maxRange (inclusive)
+    secretNumber = Math.floor(Math.random() * (maxRange - minRange + 1)) + minRange;
+    attempts = 0;
+
+    // Reset UI elements
+    messageElement.textContent = `You have ${maxAttempts} attempts. Good luck!`;
+    messageElement.style.color = '#666';
+    guessInput.value = '';
+    guessInput.disabled = false;
+    checkButton.style.display = 'block';
+    resetButton.style.display = 'none';
+
+    console.log(`(DEBUG) Secret Number: ${secretNumber}`);
+}
+
+/**
+ * Handles the user's guess when the "Check Guess" button is clicked.
+ */
+function checkGuess() {
+    // 1. Get and convert the input value to a number
+    const userGuess = parseInt(guessInput.value);
+
+    // 2. Input Validation
+    if (isNaN(userGuess) || userGuess < minRange || userGuess > maxRange) {
+        setMessage(`Please enter a valid number between ${minRange} and ${maxRange}.`, '#d9534f');
+        return; // Stop execution if input is invalid
+    }
+
+    // 3. Increment attempts
+    attempts++;
+
+    // 4. Check the guess
+    if (userGuess === secretNumber) {
+        // WIN condition
+        setMessage(`🎉 Congratulations! You guessed the number ${secretNumber} in ${attempts} attempts!`, '#5cb85c');
+        endGame(true);
+    } else if (attempts >= maxAttempts) {
+        // LOSE condition (out of attempts)
+        setMessage(`❌ Game Over! The number was ${secretNumber}.`, '#d9534f');
+        endGame(false);
+    } else if (userGuess < secretNumber) {
+        // HINT: Too Low
+        setMessage(`Too Low! Try a higher number. (${maxAttempts - attempts} attempts left)`, '#f0ad4e');
+    } else {
+        // HINT: Too High
+        setMessage(`Too High! Try a lower number. (${maxAttempts - attempts} attempts left)`, '#f0ad4e');
+    }
+}
+
+/**
+ * Sets the message text and color in the UI.
+ * @param {string} msg The message to display.
+ * @param {string} color The CSS color for the message text.
+ */
+function setMessage(msg, color) {
+    messageElement.textContent = msg;
+    messageElement.style.color = color;
+}
+
+/**
+ * Ends the current game session, disabling input and showing the reset button.
+ * @param {boolean} won True if the player won, false otherwise.
+ */
+function endGame(won) {
+    guessInput.disabled = true;
+    checkButton.style.display = 'none';
+    resetButton.style.display = 'block';
+    resetButton.textContent = won ? 'Play Again (You Won!)' : 'Try Again (You Lost!)';
+}
+
+
+// --- Event Listeners ---
+
+// 1. Listen for clicks on the Check button
+checkButton.addEventListener('click', checkGuess);
+
+// 2. Allow user to press Enter key to submit guess
+guessInput.addEventListener('keydown', (event) => {
+    // Check if the game is active (input is not disabled)
+    if (event.key === 'Enter' && !guessInput.disabled) {
+        checkGuess();
+    }
+});
+
+// 3. Listen for clicks on the Reset button
+resetButton.addEventListener('click', initializeGame);
+
+// --- START THE GAME ---
+initializeGame();
+    </script>
+</body>
+</html>
